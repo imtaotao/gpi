@@ -26,6 +26,9 @@
   "bugs": {
     "url": "https://github.com/imtaotao/kaisa/issues"
   },
+  "dependencies": {
+    "esm-semver": "^0.0.9"
+  },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-json": "^4.1.0",

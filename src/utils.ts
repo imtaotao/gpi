@@ -10,7 +10,7 @@ export const isUnsupportedVersionFormat = (v?: string) =>
 
 export const getVersionInfo = (rawSpec: string) => {
   if (isUnsupportedVersionFormat(rawSpec)) {
-    throw new Error(``);
+    throw new Error(`Temporarily unsupported protocols: "${rawSpec}"`);
   }
   const res = { rawSpec } as VersionInfo;
   const spec = res.rawSpec === "" ? "latest" : res.rawSpec.trim();

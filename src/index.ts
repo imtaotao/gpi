@@ -2,6 +2,7 @@ import { pickManifest } from "./pickManifest";
 import type { Packages, PickManifestOptions } from "./types";
 
 export * from "./types";
+export * from './utils';
 export { pickManifest } from "./pickManifest";
 
 const fullDoc = "application/json";

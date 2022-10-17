@@ -4,19 +4,20 @@ import cleanup from 'rollup-plugin-cleanup';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from 'rollup-plugin-typescript2';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import { dependencies } from './package.json';
 
 const outputConfigs = {
   cjs: {
     format: 'cjs',
-    file: path.resolve(__dirname, 'dist/arborist.cjs.js'),
+    file: path.resolve(__dirname, 'dist/gpi.cjs.js'),
   },
   'esm-bundler': {
     format: 'es',
-    file: path.resolve(__dirname, 'dist/arborist.esm-bundler.js'),
+    file: path.resolve(__dirname, 'dist/gpi.esm-bundler.js'),
   },
   umd: {
     format: 'umd',
-    file: path.resolve(__dirname, 'dist/arborist.umd.js'),
+    file: path.resolve(__dirname, 'dist/gpi.umd.js'),
   },
 };
 
@@ -28,9 +29,10 @@ function createConfig(format, output) {
   let nodePlugins = [];
   const isUmdBuild = /umd/.test(format);
   const input = path.resolve(__dirname, 'src/index.ts')
+  const external = isUmdBuild || !dependencies ? [] : Object.keys(dependencies);
 
-  output.externalLiveBindings = false;
-  if (isUmdBuild) output.name = 'Arborist';
+  output.externalLiveBindings = true;
+  if (isUmdBuild) output.name = 'Gpi';
   
   if (format !== 'cjs') {
     nodePlugins = [
@@ -42,6 +44,7 @@ function createConfig(format, output) {
   return {
     input,
     output,
+    external,
     plugins: [
       cleanup(),
       json({

@@ -2,16 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Arborist test</title>
+  <title>gpi test</title>
+  <style>
+    #view {
+      margin: 20px;
+      padding: 20px;
+      min-width: 500px;
+      border: 1px solid #ddd;
+    }
+  </style>
 </head>
 <body>
-<script src="./dist/arborist.umd.js"></script>
+<label for="pkgName">pkgName: </label>
+<input type="text" id="pkgName" value="react-dom">
+<label for="version">version: </label>
+<input type="text" id="version" value="^16.x.x">
+<button id="button">confirm</button>
+<pre id="view"></pre>
+
+<script src="./dist/gpi.umd.js"></script>
+<script src="https://unpkg.com/gpi/dist/gpi.umd.js"></script>
 <script>
-  Arborist.getLockJson({
-    'react-dom': '179',
-  }).then(res => {
-    console.log(res);
-  })
+  const request = () => {
+    Gpi.gpi(pkgName.value, version.value)
+    .then(res => {
+      console.log(res);
+      view.textContent = JSON.stringify(res, null, 2);
+    })
+    .catch(e => {
+      alert(e);
+      throw e;
+    });
+  }
+  request();
+  button.onclick = request;
 </script>
 </body>
 </html>

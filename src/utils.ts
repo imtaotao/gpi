@@ -1,22 +1,17 @@
 import * as semver from "esm-semver";
+import type { VersionInfo } from "./types";
 
 // git://
 // npm://
 // http://
 // https://
-export const isUnsupportedVersionFormat = (v: string) => {
-  if (!v) return false;
-  return v.includes(":");
-};
-
-export interface VersionInfo {
-  rawSpec: string;
-  fetchSpec: string;
-  type: "version" | "range" | "tag";
-}
+export const isUnsupportedVersionFormat = (v?: string) =>
+  Boolean(v && v.includes(":"));
 
 export const getVersionInfo = (rawSpec: string) => {
-  if (isUnsupportedVersionFormat(rawSpec)) return null;
+  if (isUnsupportedVersionFormat(rawSpec)) {
+    throw new Error(``);
+  }
   const res = { rawSpec } as VersionInfo;
   const spec = res.rawSpec === "" ? "latest" : res.rawSpec.trim();
   res.fetchSpec = spec;

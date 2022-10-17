@@ -1,9 +1,9 @@
 {
-  "name": "deps-arborist",
+  "name": "gpi",
   "version": "0.0.1",
-  "description": "",
-  "main": "dist/kaisa.cjs.js",
-  "module": "dist/kaisa.esm-bundler.js",
+  "description": "Get a specific version of the package data",
+  "main": "dist/gpi.cjs.js",
+  "module": "dist/gpi.esm-bundler.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "rollup --config",
@@ -12,8 +12,8 @@
   },
   "author": "imtaotao",
   "keywords": [
-    "deps",
-    "arborist"
+    "pkg",
+    "info"
   ],
   "license": "MIT",
   "publishConfig": {
@@ -21,10 +21,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/imtaotao/kaisa.git"
+    "url": "git+https://github.com/imtaotao/gpi.git"
   },
   "bugs": {
-    "url": "https://github.com/imtaotao/kaisa/issues"
+    "url": "https://github.com/imtaotao/gpi/issues"
   },
   "dependencies": {
     "esm-semver": "^0.0.9"

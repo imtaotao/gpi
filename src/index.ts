@@ -1,52 +1,52 @@
 import { pickManifest } from "./pickManifest";
+import type { Packages, PickManifestOptions } from "./types";
 
-const registry = "https://registry.npmjs.org/";
+export * from "./types";
+export { pickManifest } from "./pickManifest";
+
+const fullDoc = "application/json";
 const corgiDoc =
   "application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*";
-const fullDoc = "application/json";
 
-const packumentCache = new Map<string, any>();
-async function packument(
-  packumentUrl: string,
+const packumentCache: Record<string, Promise<Packages>> = {};
+
+const packument = async (
+  url: string,
   fullMetadata = false
-): Promise<any> {
-  if (packumentCache && packumentCache.has(packumentUrl)) {
-    return packumentCache.get(packumentUrl);
+): Promise<Packages> => {
+  if (url in packumentCache) {
+    return packumentCache[url];
   }
-  try {
-    const res = await fetch(packumentUrl, {
-      headers: {
-        accept: fullMetadata ? fullDoc : corgiDoc,
-      },
+  packumentCache[url] = fetch(url, {
+    headers: {
+      accept: fullMetadata ? fullDoc : corgiDoc,
+    },
+  })
+    .then(async (res) => {
+      const packument = await res.json();
+      packument._cached = res.headers.has("x-local-cache");
+      packument._contentLength = Number(res.headers.get("content-length"));
+      return packument;
+    })
+    .catch((err) => {
+      delete packumentCache[url];
+      if ((err as any).code !== "E404" || fullMetadata) {
+        throw err;
+      }
+      fullMetadata = true;
+      return packument(url, fullMetadata);
     });
-    const packument = await res.json();
-    packument._cached = res.headers.has("x-local-cache");
-    packument._contentLength = +(res.headers.get("content-length") as any);
-    if (packumentCache) {
-      packumentCache.set(packumentUrl, packument);
-    }
-    return packument;
-  } catch (err) {
-    if (packumentCache) {
-      packumentCache.delete(packumentUrl);
-    }
-    if ((err as any).code !== "E404" || fullMetadata) {
-      throw err;
-    }
-    fullMetadata = true;
-    return packument(packumentUrl, fullMetadata);
-  }
-}
+  return packumentCache[url];
+};
 
-export async function getLockJson(deps: Record<string, string>) {
-  const ls = [];
-  for (const pkgName in deps) {
-    const spec = deps[pkgName];
-    const p = packument(`${registry}${pkgName}`).then((res) => {
-      return pickManifest(res, spec, { defaultTag: "latest" });
-    });
-    ls.push(p);
-  }
-  const res = await Promise.all(ls);
-  console.log(res[0]);
+export function gpi(
+  pkgName: string,
+  wanted: string,
+  opts?: PickManifestOptions
+) {
+  let { fullMetadata, registry = "https://registry.npmjs.org" } = opts || {};
+  if (!registry.endsWith("/")) registry += "/";
+  return packument(`${registry}${pkgName}`, fullMetadata).then((res) =>
+    pickManifest(res, wanted, opts)
+  );
 }

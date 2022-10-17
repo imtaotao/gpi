@@ -1,22 +1,61 @@
 import * as semver from "esm-semver";
 import { getVersionInfo } from "./utils";
+import type { Packages, DetailPackage, PickManifestOptions } from "./types";
 
-const isBefore = (verTimes: any, ver: any, time: any) =>
-  !verTimes || !verTimes[ver] || Date.parse(verTimes[ver]) <= time;
+const isBefore = (
+  verTimes: Record<string, string> | undefined,
+  ver: string | null,
+  time: string | number | Date
+) => {
+  return (
+    !verTimes ||
+    !verTimes[ver as any] ||
+    Date.parse(verTimes[ver as any]) <= time
+  );
+};
 
 const avoidSemverOpt = { includePrerelease: true, loose: true };
-const shouldAvoid = (ver: any, avoid: any) =>
-  avoid && semver.satisfies(ver, avoid, avoidSemverOpt);
+const shouldAvoid = (ver: string, avoid?: string | null) => {
+  return avoid && semver.satisfies(ver, avoid, avoidSemverOpt);
+};
 
-const decorateAvoid = (result: any, avoid: any) =>
-  result && shouldAvoid(result.version, avoid)
+const decorateAvoid = (result: DetailPackage | null, avoid?: string | null) => {
+  return result && shouldAvoid(result.version, avoid)
     ? { ...result, _shouldAvoid: true }
     : result;
+};
 
-const _pickManifest = (packument: any, wanted: string, opts: any): any => {
+const engineOk = (
+  target: DetailPackage,
+  npmVer: string | null,
+  nodeVer: string | null,
+  force = false
+) => {
+  const nodev = force ? null : nodeVer;
+  const eng = target.engines;
+  const opt = { includePrerelease: true };
+  if (!eng) {
+    return true;
+  }
+
+  const nodeFail = nodev && eng.node && !semver.satisfies(nodev, eng.node, opt);
+  const npmFail = npmVer && eng.npm && !semver.satisfies(npmVer, eng.npm, opt);
+  if (nodeFail || npmFail) {
+    return false;
+  }
+  return true;
+};
+
+const pink = (
+  packument: Packages,
+  wanted: string,
+  opts: PickManifestOptions
+): DetailPackage | null => {
   const {
     defaultTag = "latest",
     before = null,
+    nodeVersion = null,
+    npmVersion = null,
     includeStaged = false,
     avoid = null,
   } = opts;
@@ -35,30 +74,25 @@ const _pickManifest = (packument: any, wanted: string, opts: any): any => {
 
   const time = before && verTimes ? +new Date(before) : Infinity;
   const spec = getVersionInfo(wanted || defaultTag);
-  const type = spec!.type;
+  const type = spec.type;
   const distTags = packument["dist-tags"] || {};
 
   if (type !== "tag" && type !== "version" && type !== "range") {
     throw new Error("Only tag, version, and range are supported");
   }
 
-  // 如果类型是 'tag'，而不仅仅是隐含的默认类型，那么它就必须是这个类型，否则其他类型都不行。
   if (wanted && type === "tag") {
-    const ver = distTags[wanted];
-    // 如果 dist-tags 中的版本是在 before 日期之前，那么
-    // 我们就使用这个版本。 否则，我们将得到优先级最高的版本
-    // 在 dist-tag 之前。
+    const ver = (distTags as any)[wanted];
     if (isBefore(verTimes, ver, time)) {
       return decorateAvoid(
         versions[ver] || staged[ver] || restricted[ver],
         avoid
       );
     } else {
-      return _pickManifest(packument, `<=${ver}`, opts);
+      return pink(packument, `<=${ver}`, opts);
     }
   }
 
-  // 类似地，如果是一个特定的版本，那么只有那个版本可以
   if (wanted && type === "version") {
     const ver = semver.clean(wanted, { loose: true });
     const mani =
@@ -66,13 +100,8 @@ const _pickManifest = (packument: any, wanted: string, opts: any): any => {
     return isBefore(verTimes, ver, time) ? decorateAvoid(mani, avoid) : null;
   }
 
-  // 根据我们的启发式方法进行排序，并挑选最适合的。
   const range = type === "range" ? wanted : "*";
-
-  // 如果范围是*，那么如果有的话，我们就选择 "最新 "的。
-  // 但如果应该避免，则跳过这一点，在这种情况下，我们必须
-  // 要更努力地尝试。
-  const defaultVer = distTags[defaultTag];
+  const defaultVer = (distTags as any)[defaultTag];
   if (
     defaultVer &&
     (range === "*" || semver.satisfies(defaultVer, range, { loose: true })) &&
@@ -84,7 +113,6 @@ const _pickManifest = (packument: any, wanted: string, opts: any): any => {
     }
   }
 
-  // 实际上要对名单进行分类。
   const allEntries = Object.entries(versions)
     .concat(Object.entries(staged))
     .concat(Object.entries(restricted))
@@ -108,6 +136,9 @@ const _pickManifest = (packument: any, wanted: string, opts: any): any => {
       const notstageb = !staged[b];
       const notdepra = !mania.deprecated;
       const notdeprb = !manib.deprecated;
+      const enginea = engineOk(mania, npmVersion, nodeVersion);
+      const engineb = engineOk(manib, npmVersion, nodeVersion);
+
       // sort by:
       // - not an avoided version
       // - not restricted
@@ -124,6 +155,10 @@ const _pickManifest = (packument: any, wanted: string, opts: any): any => {
         // @ts-ignore
         notstageb - notstagea ||
         // @ts-ignore
+        (notdeprb && engineb) - (notdepra && enginea) ||
+        // @ts-ignore
+        engineb - enginea ||
+        // @ts-ignore
         notdeprb - notdepra ||
         semver.rcompare(vera, verb, sortSemverOpt)
       );
@@ -132,9 +167,12 @@ const _pickManifest = (packument: any, wanted: string, opts: any): any => {
   return decorateAvoid(entries[0] && entries[0][1], avoid);
 };
 
-export function pickManifest(packument: any, wanted: string, opts = {}) {
-  const mani = _pickManifest(packument, wanted, opts);
-  const picked = mani;
+export function pickManifest(
+  packument: Packages,
+  wanted: string,
+  opts: PickManifestOptions = {}
+) {
+  const picked = pink(packument, wanted, opts);
   const policyRestrictions = packument.policyRestrictions;
   const restricted = (policyRestrictions && policyRestrictions.versions) || {};
 
@@ -142,14 +180,14 @@ export function pickManifest(packument: any, wanted: string, opts = {}) {
     return picked;
   }
 
-  const { before = null, defaultTag = "latest" } = opts as any;
+  const { before = null } = opts;
   const bstr = before ? new Date(before).toLocaleString() : "";
   const { name } = packument;
   const pckg =
     `${name}@${wanted}` + (before ? ` with a date before ${bstr}` : "");
 
   const isForbidden = picked && !!restricted[picked.version];
-  const polMsg = isForbidden ? policyRestrictions.message : "";
+  const polMsg = isForbidden ? policyRestrictions?.message : "";
 
   throw new Error(
     !isForbidden

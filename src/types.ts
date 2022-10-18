@@ -11,7 +11,6 @@ export interface PickManifestOptions {
   npmVersion?: string;
   includeStaged?: boolean;
   avoid?: string;
-  [key: string]: any; // fullMetadata
 }
 
 export type GpiOptions = {

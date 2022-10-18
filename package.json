@@ -1,6 +1,6 @@
 {
   "name": "gpi",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Get a specific version of the package data",
   "main": "dist/gpi.cjs.js",
   "module": "dist/gpi.esm-bundler.js",

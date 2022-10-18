@@ -1,5 +1,5 @@
 import { pickManifest } from "./pickManifest";
-import type { Packages, PickManifestOptions } from "./types";
+import type { Packages, GpiOptions } from "./types";
 
 export * from "./types";
 export * from "./utils";
@@ -13,14 +13,14 @@ const packumentCache: Record<string, Promise<Packages>> = {};
 
 const packument = async (
   url: string,
+  customFetch: typeof fetch,
   fullMetadata = false
 ): Promise<Packages> => {
   const spec = `${fullMetadata}:${url}`;
-  console.log(spec);
   if (spec in packumentCache) {
     return packumentCache[spec];
   }
-  packumentCache[spec] = fetch(url, {
+  packumentCache[spec] = customFetch(url, {
     headers: {
       accept: fullMetadata ? fullDoc : corgiDoc,
     },
@@ -37,19 +37,19 @@ const packument = async (
         throw err;
       }
       fullMetadata = true;
-      return packument(url, fullMetadata);
+      return packument(url, customFetch, fullMetadata);
     });
   return packumentCache[spec];
 };
 
-export function gpi(
-  pkgName: string,
-  wanted: string,
-  opts?: PickManifestOptions
-) {
-  let { fullMetadata, registry = "https://registry.npmjs.org" } = opts || {};
+export function gpi(pkgName: string, wanted: string, opts?: GpiOptions) {
+  let {
+    fullMetadata,
+    customFetch = fetch,
+    registry = "https://registry.npmjs.org",
+  } = opts || {};
   if (!registry.endsWith("/")) registry += "/";
-  return packument(`${registry}${pkgName}`, fullMetadata).then((res) =>
-    pickManifest(res, wanted, opts)
+  return packument(`${registry}${pkgName}`, customFetch, fullMetadata).then(
+    (res) => pickManifest(res, wanted, opts)
   );
 }

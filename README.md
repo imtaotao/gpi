@@ -5,7 +5,7 @@
 
 </div>
 
-Get a specific package information through a version with range selection, the search algorithm comes from `npm/cli`
+Get a specific package information through a version with range selection, the search algorithm comes from `npm/cli`.
 
 [Online test platform](https://imtaotao.github.io/gpi/)
 

@@ -11,10 +11,14 @@ export interface PickManifestOptions {
   npmVersion?: string;
   includeStaged?: boolean;
   avoid?: string;
-  registry?: string;
-  fullMetadata?: boolean;
   [key: string]: any; // fullMetadata
 }
+
+export type GpiOptions = {
+  registry?: string;
+  fullMetadata?: boolean;
+  customFetch?: typeof fetch;
+} & PickManifestOptions;
 
 export interface DetailPackage {
   name: string;

@@ -31,13 +31,19 @@ export interface DetailPackage {
       keyid: string;
     }>;
   };
+  bin?: Record<string, string>;
   engines?: {
     npm?: string;
     node?: string;
   };
   deprecated?: boolean;
+  overrides?: Record<string, string>;
+  bundleDependencies?: Array<string>;
   dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
+  acceptDependencies?: Record<string, string>;
+  optionalDependencies?: Record<string, string>;
 }
 
 export interface Packages {

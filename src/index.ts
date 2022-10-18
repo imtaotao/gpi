@@ -2,7 +2,7 @@ import { pickManifest } from "./pickManifest";
 import type { Packages, PickManifestOptions } from "./types";
 
 export * from "./types";
-export * from './utils';
+export * from "./utils";
 export { pickManifest } from "./pickManifest";
 
 const fullDoc = "application/json";
@@ -15,10 +15,12 @@ const packument = async (
   url: string,
   fullMetadata = false
 ): Promise<Packages> => {
-  if (url in packumentCache) {
-    return packumentCache[url];
+  const spec = `${fullMetadata}:${url}`;
+  console.log(spec);
+  if (spec in packumentCache) {
+    return packumentCache[spec];
   }
-  packumentCache[url] = fetch(url, {
+  packumentCache[spec] = fetch(url, {
     headers: {
       accept: fullMetadata ? fullDoc : corgiDoc,
     },
@@ -30,14 +32,14 @@ const packument = async (
       return packument;
     })
     .catch((err) => {
-      delete packumentCache[url];
+      delete packumentCache[spec];
       if ((err as any).code !== "E404" || fullMetadata) {
         throw err;
       }
       fullMetadata = true;
       return packument(url, fullMetadata);
     });
-  return packumentCache[url];
+  return packumentCache[spec];
 };
 
 export function gpi(

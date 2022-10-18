@@ -19,7 +19,7 @@ export type GpiOptions = {
   customFetch?: typeof fetch;
 } & PickManifestOptions;
 
-export interface DetailPackage {
+export interface PackageData {
   name: string;
   version: string;
   dist: {
@@ -47,12 +47,13 @@ export interface DetailPackage {
   peerDependencies?: Record<string, string>;
   acceptDependencies?: Record<string, string>;
   optionalDependencies?: Record<string, string>;
+  peerDependenciesMeta?: Record<string, { optional: boolean }>;
 }
 
 export interface Packages {
   name: string;
   modified: string;
-  versions: Record<string, DetailPackage>;
+  versions: Record<string, PackageData>;
   "dist-tags": {
     beta: string;
     experimental: string;
@@ -65,9 +66,9 @@ export interface Packages {
   time?: Record<string, string>;
   policyRestrictions?: {
     message?: string;
-    versions?: Record<string, DetailPackage>;
+    versions?: Record<string, PackageData>;
   };
   stagedVersions?: {
-    versions?: Record<string, DetailPackage>;
+    versions?: Record<string, PackageData>;
   };
 }

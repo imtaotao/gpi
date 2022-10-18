@@ -1,6 +1,6 @@
 import * as semver from "esm-semver";
 import { getVersionInfo } from "./utils";
-import type { Packages, DetailPackage, PickManifestOptions } from "./types";
+import type { Packages, PackageData, PickManifestOptions } from "./types";
 
 const isBefore = (
   verTimes: Record<string, string> | undefined,
@@ -19,14 +19,14 @@ const shouldAvoid = (ver: string, avoid?: string | null) => {
   return avoid && semver.satisfies(ver, avoid, avoidSemverOpt);
 };
 
-const decorateAvoid = (result: DetailPackage | null, avoid?: string | null) => {
+const decorateAvoid = (result: PackageData | null, avoid?: string | null) => {
   return result && shouldAvoid(result.version, avoid)
     ? { ...result, _shouldAvoid: true }
     : result;
 };
 
 const engineOk = (
-  target: DetailPackage,
+  target: PackageData,
   npmVer: string | null,
   nodeVer: string | null,
   force = false
@@ -50,7 +50,7 @@ const pink = (
   packument: Packages,
   wanted: string,
   opts: PickManifestOptions
-): DetailPackage | null => {
+): PackageData | null => {
   const {
     defaultTag = "latest",
     before = null,

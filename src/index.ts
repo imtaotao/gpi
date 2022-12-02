@@ -1,6 +1,6 @@
 import { createDefer } from "./utils";
 import { pickManifest } from "./pickManifest";
-import type { Packages, GpiOptions, RetryType } from "./types";
+import type { Packages, RetryType, GpiOptions, FetchOptinos } from "./types";
 
 export * from "./types";
 export * from "./utils";
@@ -22,7 +22,6 @@ const packument = (
   if (spec in packumentCache) {
     return packumentCache[spec];
   }
-
   let retryTimes = 0;
 
   const request = () => {
@@ -60,7 +59,7 @@ const packument = (
   return request();
 };
 
-export function gpi(pkgName: string, wanted: string, opts?: GpiOptions) {
+export function preload(pkgName: string, opts?: FetchOptinos) {
   let {
     retry,
     fullMetadata,
@@ -74,5 +73,9 @@ export function gpi(pkgName: string, wanted: string, opts?: GpiOptions) {
     customFetch,
     retry,
     fullMetadata
-  ).then((res) => pickManifest(res, wanted, opts));
+  );
+}
+
+export function gpi(pkgName: string, wanted: string, opts?: GpiOptions) {
+  return preload(pkgName, opts).then((res) => pickManifest(res, wanted, opts));
 }

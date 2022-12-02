@@ -12,7 +12,7 @@ Get a specific package information through a version with range selection, the s
 ### NPM
 
 ```js
-import { gpi } from 'gpi';
+import { gpi, preload } from 'gpi';
 
 gpi('react-dom', '^16.x.x', {
   customFetch: window.fetch, // Default value is `window.fetch`
@@ -28,6 +28,22 @@ gpi('react-dom', '^16.x.x', {
 }).then(res => {
   console.log(res);
 })
+
+// Preload packge information
+preload('react', {
+  customFetch: window.fetch, // Default value is `window.fetch`
+  registry: 'https://registry.npmjs.org', // Default value is `https://registry.npmjs.org`
+  retry(err, pkgName, times, nextRequest) {
+    if (times < 5) {
+      console.log(`"${pkgName}" retry times (${times})`);
+      nextRequest();
+    } else {
+      throw err;
+    }
+  },
+}).then(pkgs => {
+  console.log(pkgs);
+})
 ```
 
 
@@ -39,9 +55,9 @@ gpi('react-dom', '^16.x.x', {
 <body>
   <script src="https://unpkg.com/gpi/dist/gpi.umd.js"></script>
   <script>
-    Gpi.gpi('react-dom', '^16.x.x').then(res => {
-      console.log(res);
-    })
+    const { gpi, preload } = Gpi;
+
+    // ...
   </script>
 </body>
 </html>

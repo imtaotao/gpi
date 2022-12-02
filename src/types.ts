@@ -20,12 +20,14 @@ export type RetryType = (
   nextRequest: () => void
 ) => void;
 
-export type GpiOptions = {
+export interface FetchOptinos {
   registry?: string;
   retry?: RetryType;
   fullMetadata?: boolean;
   customFetch?: typeof fetch;
-} & PickManifestOptions;
+}
+
+export type GpiOptions = FetchOptinos & PickManifestOptions;
 
 export interface PackageData {
   name: string;

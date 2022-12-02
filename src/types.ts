@@ -14,10 +14,11 @@ export interface PickManifestOptions {
 }
 
 export type RetryType = (
+  err: any,
   name: string,
   times: number,
   nextRequest: () => void
-) => boolean | void;
+) => void;
 
 export type GpiOptions = {
   registry?: string;

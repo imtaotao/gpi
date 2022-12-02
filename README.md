@@ -17,10 +17,12 @@ import { gpi } from 'gpi';
 gpi('react-dom', '^16.x.x', {
   customFetch: window.fetch, // Default value is `window.fetch`
   registry: 'https://registry.npmjs.org', // Default value is `https://registry.npmjs.org`
-  retry(pkgName, times, nextRequest) {  // Retry callback
+  retry(err, pkgName, times, nextRequest) {  // Retry callback
     if (times < 5) {
       console.log(`"${pkgName}" retry times (${times})`);
       nextRequest();
+    } else {
+      throw err; // Must throw an error
     }
   },
 }).then(res => {

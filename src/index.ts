@@ -42,12 +42,13 @@ const packument = (
         if ((err as any).code !== "E404" || fullMetadata) {
           if (retry) {
             const defer = createDefer();
-            retry(pkgName, ++retryTimes, () => {
+            retry(err, pkgName, ++retryTimes, () => {
               request().then(defer.resolve, defer.reject);
             });
-            await defer.p;
+            return await defer.p;
+          } else {
+            throw err;
           }
-          throw err;
         } else {
           fullMetadata = true;
           return packument(url, pkgName, customFetch, retry, fullMetadata);

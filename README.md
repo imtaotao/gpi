@@ -14,7 +14,16 @@ Get a specific package information through a version with range selection, the s
 ```js
 import { gpi } from 'gpi';
 
-gpi('react-dom', '^16.x.x').then(res => {
+gpi('react-dom', '^16.x.x', {
+  customFetch: window.fetch, // Default value is `window.fetch`
+  registry: 'https://registry.npmjs.org', // Default value is `https://registry.npmjs.org`
+  retry(pkgName, times, nextRequest) {  // Retry callback
+    if (times < 5) {
+      console.log(`"${pkgName}" retry times (${times})`);
+      nextRequest();
+    }
+  },
+}).then(res => {
   console.log(res);
 })
 ```

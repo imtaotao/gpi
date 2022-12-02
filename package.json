@@ -1,13 +1,13 @@
 {
   "name": "gpi",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "description": "Get a specific version of the package data",
   "main": "dist/gpi.cjs.js",
   "module": "dist/gpi.esm-bundler.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "rollup --config",
-    "dev": "http-server ./",
+    "dev": "http-server ./ -o index.html",
     "format": "prettier --write --parser typescript \"(src|tests)/**/*.(js|ts?(x))\""
   },
   "author": "imtaotao",

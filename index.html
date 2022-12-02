@@ -20,11 +20,18 @@
 <button id="button">confirm</button>
 <pre id="view"></pre>
 
-<script src="https://unpkg.com/gpi/dist/gpi.umd.js"></script>
+<script src="https://unpkg.com/gpi@latest/dist/gpi.umd.js"></script>
 <script src="./dist/gpi.umd.js"></script>
 <script>
   const request = () => {
-    Gpi.gpi(pkgName.value, version.value)
+    Gpi.gpi(pkgName.value, version.value, {
+      retry(pkgName, times, next) {
+        if (times < 5) {
+          console.log(`"${pkgName}" retry times (${times})`);
+          next();
+        }
+      },
+    })
     .then(res => {
       console.log(res);
       view.textContent = JSON.stringify(res, null, 2);

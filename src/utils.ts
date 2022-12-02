@@ -1,6 +1,21 @@
 import * as semver from "esm-semver";
 import type { VersionInfo } from "./types";
 
+export interface Defer {
+  p: Promise<any>;
+  resolve: (value: any) => void;
+  reject: (reason?: any) => void;
+}
+
+export const createDefer = () => {
+  const defer: Defer = {} as any;
+  defer.p = new Promise((resolve, reject) => {
+    defer.resolve = resolve;
+    defer.reject = reject;
+  });
+  return defer;
+};
+
 // git://
 // npm://
 // http://

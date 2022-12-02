@@ -13,8 +13,15 @@ export interface PickManifestOptions {
   avoid?: string;
 }
 
+export type RetryType = (
+  name: string,
+  times: number,
+  nextRequest: () => void
+) => boolean | void;
+
 export type GpiOptions = {
   registry?: string;
+  retry?: RetryType;
   fullMetadata?: boolean;
   customFetch?: typeof fetch;
 } & PickManifestOptions;
@@ -34,7 +41,7 @@ export interface PackageData {
       keyid: string;
     }>;
   };
-  bin?: Record<string, string>;
+  bin?: string | Record<string, string>;
   engines?: {
     npm?: string;
     node?: string;

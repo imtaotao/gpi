@@ -4,12 +4,12 @@ import type { Packages, RetryType, GpiOptions, FetchOptinos } from "./types";
 
 export * from "./types";
 export * from "./utils";
-export { pickManifest } from "./pickManifest";
+export { pickCache, pickManifest } from "./pickManifest";
 
 const fullDoc = "application/json";
 // prettier-ignore
 const corgiDoc = "application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*";
-const packumentCache: Record<string, Promise<Packages>> = {};
+export const packumentCache: Record<string, Promise<Packages>> = {};
 
 const packument = (
   url: string,

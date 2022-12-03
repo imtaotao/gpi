@@ -167,16 +167,24 @@ const pink = (
   return decorateAvoid(entries[0] && entries[0][1], avoid);
 };
 
+export const pickCache = new Map<Packages, Record<string, PackageData>>();
+
 export function pickManifest(
   packument: Packages,
   wanted: string,
   opts: PickManifestOptions = {}
 ) {
+  if (!pickCache.has(packument)) pickCache.set(packument, Object.create(null));
+  const cacheMap = pickCache.get(packument)!;
+  if (!opts.noCache && cacheMap[wanted]) {
+    return cacheMap[wanted];
+  }
   const picked = pink(packument, wanted, opts);
   const policyRestrictions = packument.policyRestrictions;
   const restricted = (policyRestrictions && policyRestrictions.versions) || {};
 
   if (picked && !restricted[picked.version]) {
+    cacheMap[wanted] = picked;
     return picked;
   }
 

@@ -11,6 +11,7 @@ export interface PickManifestOptions {
   npmVersion?: string;
   includeStaged?: boolean;
   avoid?: string;
+  noCache?: boolean;
 }
 
 export type RetryType = (
